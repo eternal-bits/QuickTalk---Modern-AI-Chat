@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f0f0f">
     <title>QuickTalk - Modern AI Chat</title>
     <style>
         /* ===== CSS VARIABLES FOR THEMING ===== */
@@ -48,11 +51,17 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
             transition: background 0.3s ease, color 0.3s ease;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
         }
 
         /* ===== CHAT CONTAINER ===== */
@@ -60,6 +69,7 @@
             width: 100%;
             max-width: 900px;
             height: 90vh;
+            height: 90dvh; /* Dynamic viewport height */
             max-height: 800px;
             background: var(--bg-secondary);
             border-radius: 24px;
@@ -69,6 +79,7 @@
             overflow: hidden;
             border: 1px solid var(--border-color);
             transition: all 0.3s ease;
+            position: relative;
         }
 
         /* ===== HEADER ===== */
@@ -361,18 +372,30 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .chat-container {
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0;
-            }
-
             body {
                 padding: 0;
             }
 
-            .message {
-                max-width: 85%;
+            .chat-container {
+                height: 100vh;
+                height: 100dvh; /* Dynamic viewport height */
+                max-height: 100vh;
+                max-height: 100dvh;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .chat-header {
+                padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+            .logo {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
             }
 
             .title {
@@ -382,6 +405,174 @@
             .subtitle {
                 display: none;
             }
+
+            .theme-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .chat-messages {
+                padding: 16px;
+                padding-bottom: max(env(safe-area-inset-bottom), 16px);
+                /* Prevent content from being hidden behind keyboard */
+                scroll-padding-bottom: 80px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .message-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .message-bubble {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+
+            .chat-input-container {
+                padding: 12px 16px;
+                padding-bottom: max(env(safe-area-inset-bottom, 12px));
+                position: sticky;
+                bottom: 0;
+                background: var(--bg-secondary);
+                border-top: 1px solid var(--border-color);
+            }
+
+            .input-field {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 12px 16px;
+                border-radius: 14px;
+                max-height: 100px;
+            }
+
+            .send-btn {
+                width: 48px;
+                height: 48px;
+                border-radius: 14px;
+                font-size: 20px;
+                /* Larger touch target */
+                min-width: 48px;
+                min-height: 48px;
+            }
+
+            .welcome-message {
+                padding: 24px 16px;
+            }
+
+            .welcome-icon {
+                font-size: 40px;
+            }
+
+            .welcome-title {
+                font-size: 1.3rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 380px) {
+            .chat-header {
+                padding: max(env(safe-area-inset-top), 12px) 12px 12px 12px;
+            }
+
+            .logo {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .title {
+                font-size: 1rem;
+            }
+
+            .theme-toggle {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            .chat-messages {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .message-bubble {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .send-btn {
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            .logo {
+                width: 32px;
+                height: 32px;
+            }
+
+            .chat-messages {
+                padding: 12px 16px;
+            }
+
+            .welcome-message {
+                padding: 20px 16px;
+            }
+
+            .welcome-icon {
+                font-size: 32px;
+                margin-bottom: 8px;
+            }
+
+            .welcome-title {
+                font-size: 1.2rem;
+                margin-bottom: 4px;
+            }
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .chat-container {
+                height: -webkit-fill-available;
+            }
+
+            body {
+                height: -webkit-fill-available;
+            }
+        }
+
+        /* Prevent text selection on touch devices */
+        @media (hover: none) {
+            .theme-toggle,
+            .send-btn,
+            .message-avatar,
+            .logo {
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+        }
+
+        /* Touch optimization */
+        .theme-toggle,
+        .send-btn {
+            -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
+            touch-action: manipulation;
         }
 
         /* ===== WELCOME MESSAGE ===== */
@@ -416,7 +607,7 @@
                 <div class="logo"></div>
                 <div class="header-title">
                     <div class="title">QuickTalk</div>
-                    <div class="subtitle">Your personal AI assistant</div>
+                    <div class="subtitle">Your personal AI assistantk</div>
                 </div>
             </div>
             <div class="header-actions">
@@ -459,7 +650,7 @@
         // OpenRouter configuration
         const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
         const MODEL = 'deepseek/deepseek-r1-0528:free';
-        const YOUR_SITE_URL = 'https://your-site.com';
+        const YOUR_SITE_URL = 'https://utsavdwivedi51.github.io/QuickTalk---Modern-AI-Chat/';
         const YOUR_SITE_NAME = 'QuickTalk';
 
         // Conversation history
@@ -592,7 +783,7 @@
                 return botReply;
             } catch (error) {
                 console.error('Error:', error);
-                return `⚠️ Error: ${error.message}. Please check your API key and network.`;
+                return `⚠️ Error: ${error.message}. Please check your network.`;
             }
         }
 
