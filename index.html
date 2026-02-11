@@ -7,12 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f0f0f">
     <title>QuickTalk - Modern AI Chat</title>
-    <!-- File processing libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
     <style>
-        /* ===== CSS VARIABLES FOR THEMING (YOUR EXISTING STYLES + NEW FILE UPLOAD STYLES) ===== */
+        /* ===== CSS VARIABLES FOR THEMING ===== */
         :root {
             --bg-primary: #0f0f0f;
             --bg-secondary: #1a1a1a;
@@ -68,6 +64,7 @@
             left: 0;
         }
 
+        /* ===== CHAT CONTAINER ===== */
         .chat-container {
             width: 100%;
             max-width: 900px;
@@ -133,6 +130,7 @@
             gap: 8px;
         }
 
+        /* ===== THEME TOGGLE ===== */
         .theme-toggle {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -180,6 +178,7 @@
             background: var(--text-secondary);
         }
 
+        /* ===== MESSAGE BUBBLES ===== */
         .message {
             display: flex;
             gap: 12px;
@@ -238,6 +237,71 @@
             border: 1px solid var(--border-color);
         }
 
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        /* ===== FILE ATTACHMENT STYLES ===== */
+        .file-attachment {
+            margin-top: 8px;
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .file-attachment img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .file-attachment img:hover {
+            transform: scale(1.02);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .user-message .file-info {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .file-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .file-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
         /* ===== TYPING INDICATOR ===== */
         .typing-indicator {
             display: flex;
@@ -272,20 +336,39 @@
             animation-delay: 0.4s;
         }
 
-        /* ===== INPUT AREA (REDESIGNED TO INCLUDE FILE UPLOAD) ===== */
+        /* ===== INPUT AREA ===== */
         .chat-input-container {
-            padding: 16px 20px 20px 20px;
+            padding: 20px 24px;
             background: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
         }
 
         .input-wrapper {
             display: flex;
             gap: 12px;
             align-items: flex-end;
+        }
+
+        .attachment-btn {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 22px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .attachment-btn:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: rotate(45deg);
         }
 
         .input-field {
@@ -344,136 +427,129 @@
             opacity: 0.5;
         }
 
-        /* ===== NEW: FILE UPLOAD BUTTONS & PREVIEW ===== */
-        .file-buttons {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-top: 4px;
-        }
-
-        .file-btn {
+        /* ===== ATTACHMENT MENU ===== */
+        .attachment-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 12px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
-            border-radius: 30px;
-            padding: 10px 18px;
-            font-size: 14px;
+            border-radius: 16px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 8px 24px var(--shadow);
+            min-width: 200px;
+            z-index: 100;
+        }
+
+        .attachment-menu.active {
+            display: flex;
+            animation: slideUp 0.2s ease;
+        }
+
+        .attachment-option {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
             color: var(--text-primary);
-            font-weight: 500;
-            flex: 0 1 auto;
-            -webkit-tap-highlight-color: transparent;
+            font-size: 15px;
         }
 
-        .file-btn:hover {
+        .attachment-option:hover {
             background: var(--bg-secondary);
-            border-color: var(--accent-primary);
         }
 
-        .file-btn i {
-            font-size: 16px;
+        .attachment-option-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
         }
 
+        /* ===== FILE PREVIEW ===== */
         .file-preview-container {
+            display: none;
+            padding: 12px 24px;
             background: var(--bg-tertiary);
-            border-radius: 16px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
+            border-top: 1px solid var(--border-color);
             gap: 12px;
-            border: 1px solid var(--border-color);
-            margin-top: 8px;
+            overflow-x: auto;
+        }
+
+        .file-preview-container.active {
+            display: flex;
         }
 
         .file-preview {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
         }
 
         .file-preview img {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 80px;
+            height: 80px;
             object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
         }
 
-        .file-icon {
-            font-size: 28px;
-            line-height: 1;
-        }
-
-        .file-info {
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .file-name {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-status {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
+        .file-preview-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            min-width: 200px;
         }
 
         .remove-file {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 8px;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: #ef4444;
+            color: white;
+            border: 2px solid var(--bg-tertiary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
         }
 
         .remove-file:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ff4444;
+            background: #dc2626;
         }
 
-        /* ===== WELCOME MESSAGE ===== */
-        .welcome-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-
-        .welcome-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .welcome-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .welcome-subtitle {
-            font-size: 0.95rem;
+        /* Hidden file inputs */
+        .hidden-input {
+            display: none;
         }
 
         /* ===== ANIMATIONS ===== */
         @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
             from {
                 opacity: 0;
                 transform: translateY(10px);
@@ -495,7 +571,7 @@
             }
         }
 
-        /* ===== RESPONSIVE (Your existing breakpoints + file button adjustments) ===== */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             body {
                 padding: 0;
@@ -512,9 +588,6 @@
 
             .chat-header {
                 padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px;
-                position: sticky;
-                top: 0;
-                z-index: 10;
             }
 
             .logo {
@@ -540,7 +613,6 @@
             .chat-messages {
                 padding: 16px;
                 padding-bottom: max(env(safe-area-inset-bottom), 16px);
-                scroll-padding-bottom: 80px;
             }
 
             .message {
@@ -561,71 +633,62 @@
             .chat-input-container {
                 padding: 12px 16px;
                 padding-bottom: max(env(safe-area-inset-bottom, 12px));
-                position: sticky;
-                bottom: 0;
+            }
+
+            .file-preview-container {
+                padding: 12px 16px;
             }
 
             .input-field {
                 font-size: 16px;
                 padding: 12px 16px;
                 border-radius: 14px;
-                max-height: 100px;
             }
 
-            .send-btn {
+            .send-btn,
+            .attachment-btn {
                 width: 48px;
                 height: 48px;
                 border-radius: 14px;
                 font-size: 20px;
-                min-width: 48px;
-                min-height: 48px;
-            }
-
-            .file-btn {
-                padding: 8px 14px;
-                font-size: 13px;
-            }
-
-            .file-preview-container {
-                padding: 10px 12px;
             }
         }
-.file-buttons {
-    flex-wrap: wrap;
-    gap: 8px;
-}
+
         @media (max-width: 380px) {
-    .file-btn .btn-text {
-        display: none;  /* ✅ Hide only the text label */
-    }
-    .file-btn {
-        padding: 10px;   /* Keep icon only, comfortable touch target */
-    }
-}
-
-        /* iOS Safari specific fixes */
-        @supports (-webkit-touch-callout: none) {
-            .chat-container {
-                height: -webkit-fill-available;
-            }
-            body {
-                height: -webkit-fill-available;
+            .send-btn,
+            .attachment-btn {
+                width: 44px;
+                height: 44px;
             }
         }
 
-        /* Touch optimization */
-        .theme-toggle,
-        .send-btn,
-        .file-btn,
-        .remove-file {
-            -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
-            touch-action: manipulation;
+        /* ===== WELCOME MESSAGE ===== */
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <!-- Header (exactly yours) -->
+        <!-- Header -->
         <div class="chat-header">
             <div class="header-left">
                 <div class="logo"></div>
@@ -646,25 +709,42 @@
             <div class="welcome-message">
                 <div class="welcome-icon"></div>
                 <div class="welcome-title">Welcome to QuickTalk</div>
-                <div class="welcome-subtitle">Start a conversation with our AI assistant – now with file upload!</div>
+                <div class="welcome-subtitle">Start a conversation with our AI assistant. Share photos, documents, and more!</div>
             </div>
         </div>
 
-        <!-- Input Area with File Upload -->
+        <!-- File Preview Area -->
+        <div class="file-preview-container" id="file-preview-container"></div>
+
+        <!-- Input Area -->
         <div class="chat-input-container">
-            <!-- Hidden file input -->
-            <input type="file" id="fileInput" accept="image/*,.pdf,.docx,.txt" style="display: none;">
-            
-            <!-- File preview (initially hidden) -->
-            <div id="filePreviewContainer" class="file-preview-container" style="display: none;">
-                <div id="filePreview" class="file-preview">
-                    <!-- Thumbnail / icon + info will be injected here -->
-                </div>
-                <button id="removeFileBtn" class="remove-file" title="Remove file">✖</button>
-            </div>
-            
-            <!-- Text input row -->
             <div class="input-wrapper">
+                <!-- Attachment Button with Menu -->
+                <div style="position: relative;">
+                    <button class="attachment-btn" id="attachment-btn" title="Attach files">
+                        <span>📎</span>
+                    </button>
+                    <div class="attachment-menu" id="attachment-menu">
+                        <div class="attachment-option" id="photo-option">
+                            <span class="attachment-option-icon">🖼️</span>
+                            <span>Photo</span>
+                        </div>
+                        <div class="attachment-option" id="camera-option">
+                            <span class="attachment-option-icon">📷</span>
+                            <span>Camera</span>
+                        </div>
+                        <div class="attachment-option" id="file-option">
+                            <span class="attachment-option-icon">📄</span>
+                            <span>Document</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden File Inputs -->
+                <input type="file" id="photo-input" class="hidden-input" accept="image/*" multiple>
+                <input type="file" id="camera-input" class="hidden-input" accept="image/*" capture="environment">
+                <input type="file" id="file-input" class="hidden-input" accept=".pdf,.doc,.docx,.txt,.csv,.json" multiple>
+
                 <textarea 
                     id="user-input" 
                     class="input-field" 
@@ -676,24 +756,10 @@
                     <span>➤</span>
                 </button>
             </div>
-            
-            <!-- File upload buttons -->
-            <div class="file-buttons">
-    <button id="uploadGalleryBtn" class="file-btn">
-        <span class="btn-icon">📷</span> <span class="btn-text">Gallery</span>
-    </button>
-    <button id="uploadCameraBtn" class="file-btn">
-        <span class="btn-icon">📸</span> <span class="btn-text">Open Camera</span>
-    </button>
-    <button id="uploadFileBtn" class="file-btn">
-        <span class="btn-icon">📁</span> <span class="btn-text">Add Files</span>
-    </button>
-</div>
         </div>
     </div>
 
     <script>
-        
         // 🔐 OPENROUTER API KEY 
         const API_KEY = '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';
 
@@ -703,32 +769,35 @@
         const YOUR_SITE_URL = 'https://utsavdwivedi51.github.io/QuickTalk---Modern-AI-Chat/';
         const YOUR_SITE_NAME = 'QuickTalk';
 
-        // ===== CONVERSATION HISTORY =====
+        // Conversation history
         let conversationHistory = [
-            { role: 'system', content: 'You are a helpful, friendly AI assistant. You can read text extracted from uploaded files and answer questions about them.' }
+            { role: 'system', content: 'You are a helpful, friendly AI assistant. You can analyze images and documents that users share with you. When users share files, provide detailed analysis and extract relevant information.' }
         ];
 
-        // ===== CURRENT FILE STATE =====
-        let currentFile = {
-            name: null,
-            size: null,
-            type: null,
-            extractedText: null,
-            previewUrl: null
-        };
+        // Store attached files
+        let attachedFiles = [];
 
-        // ===== DOM ELEMENTS =====
+        // DOM elements
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
-        const fileInput = document.getElementById('fileInput');
-        const filePreviewContainer = document.getElementById('filePreviewContainer');
-        const filePreview = document.getElementById('filePreview');
-        const removeFileBtn = document.getElementById('removeFileBtn');
+        const attachmentBtn = document.getElementById('attachment-btn');
+        const attachmentMenu = document.getElementById('attachment-menu');
+        const filePreviewContainer = document.getElementById('file-preview-container');
+        
+        // File input elements
+        const photoInput = document.getElementById('photo-input');
+        const cameraInput = document.getElementById('camera-input');
+        const fileInput = document.getElementById('file-input');
 
-        // ===== THEME MANAGEMENT (YOUR EXACT CODE) =====
+        // Attachment menu options
+        const photoOption = document.getElementById('photo-option');
+        const cameraOption = document.getElementById('camera-option');
+        const fileOption = document.getElementById('file-option');
+
+        // ===== THEME MANAGEMENT =====
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -749,13 +818,119 @@
 
         themeToggle.addEventListener('click', toggleTheme);
 
-        // ===== MESSAGE UI FUNCTIONS (YOUR EXACT CODE, ADAPTED) =====
+        // ===== ATTACHMENT MENU =====
+        attachmentBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            attachmentMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!attachmentBtn.contains(e.target) && !attachmentMenu.contains(e.target)) {
+                attachmentMenu.classList.remove('active');
+            }
+        });
+
+        // Attachment options
+        photoOption.addEventListener('click', () => {
+            photoInput.click();
+            attachmentMenu.classList.remove('active');
+        });
+
+        cameraOption.addEventListener('click', () => {
+            cameraInput.click();
+            attachmentMenu.classList.remove('active');
+        });
+
+        fileOption.addEventListener('click', () => {
+            fileInput.click();
+            attachmentMenu.classList.remove('active');
+        });
+
+        // ===== FILE HANDLING =====
+        photoInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
+        cameraInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
+        fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
+
+        function handleFileSelect(files) {
+            for (let file of files) {
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                    alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+                    continue;
+                }
+                attachedFiles.push(file);
+                addFilePreview(file);
+            }
+            updateFilePreviewContainer();
+        }
+
+        function addFilePreview(file) {
+            const preview = document.createElement('div');
+            preview.classList.add('file-preview');
+            preview.dataset.fileName = file.name;
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                preview.appendChild(img);
+            } else {
+                const fileInfo = document.createElement('div');
+                fileInfo.classList.add('file-preview-info');
+                fileInfo.innerHTML = `
+                    <span class="file-icon">${getFileIcon(file.type)}</span>
+                    <div class="file-details">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                `;
+                preview.appendChild(fileInfo);
+            }
+
+            const removeBtn = document.createElement('button');
+            removeBtn.classList.add('remove-file');
+            removeBtn.textContent = '×';
+            removeBtn.onclick = () => removeFile(file.name);
+            preview.appendChild(removeBtn);
+
+            filePreviewContainer.appendChild(preview);
+        }
+
+        function removeFile(fileName) {
+            attachedFiles = attachedFiles.filter(f => f.name !== fileName);
+            const preview = filePreviewContainer.querySelector(`[data-file-name="${fileName}"]`);
+            if (preview) preview.remove();
+            updateFilePreviewContainer();
+        }
+
+        function updateFilePreviewContainer() {
+            if (attachedFiles.length > 0) {
+                filePreviewContainer.classList.add('active');
+            } else {
+                filePreviewContainer.classList.remove('active');
+            }
+        }
+
+        function getFileIcon(type) {
+            if (type.includes('pdf')) return '📕';
+            if (type.includes('word') || type.includes('document')) return '📘';
+            if (type.includes('text')) return '📝';
+            if (type.includes('csv') || type.includes('excel')) return '📊';
+            return '📄';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // ===== MESSAGE FUNCTIONS =====
         function getCurrentTime() {
             const now = new Date();
             return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
-        function addMessageToUI(role, content) {
+        async function addMessageToUI(role, content, files = []) {
             const welcomeMsg = document.querySelector('.welcome-message');
             if (welcomeMsg) welcomeMsg.remove();
 
@@ -767,13 +942,43 @@
             avatar.textContent = role === 'user' ? '👤' : '🤖';
             
             const bubbleWrapper = document.createElement('div');
+            
             const bubble = document.createElement('div');
             bubble.classList.add('message-bubble');
             bubble.textContent = content;
-            bubbleWrapper.appendChild(bubble);
+
+            // Add file attachments
+            if (files.length > 0) {
+                for (let file of files) {
+                    const attachment = document.createElement('div');
+                    attachment.classList.add('file-attachment');
+
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = URL.createObjectURL(file);
+                        img.alt = file.name;
+                        attachment.appendChild(img);
+                    } else {
+                        const fileInfo = document.createElement('div');
+                        fileInfo.classList.add('file-info');
+                        fileInfo.innerHTML = `
+                            <span class="file-icon">${getFileIcon(file.type)}</span>
+                            <div class="file-details">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">${formatFileSize(file.size)}</div>
+                            </div>
+                        `;
+                        attachment.appendChild(fileInfo);
+                    }
+
+                    bubble.appendChild(attachment);
+                }
+            }
             
+            bubbleWrapper.appendChild(bubble);
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(bubbleWrapper);
+            
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -789,6 +994,7 @@
             
             const typingBubble = document.createElement('div');
             typingBubble.classList.add('typing-bubble');
+            
             for (let i = 0; i < 3; i++) {
                 const dot = document.createElement('span');
                 typingBubble.appendChild(dot);
@@ -806,220 +1012,140 @@
         }
 
         // ===== FILE PROCESSING =====
-        // Initialize PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        // Trigger file picker
-        document.getElementById('uploadGalleryBtn').addEventListener('click', () => {
-            fileInput.accept = 'image/*';
-            fileInput.capture = undefined;
-            fileInput.click();
-        });
-
-        document.getElementById('uploadCameraBtn').addEventListener('click', () => {
-            fileInput.accept = 'image/*';
-            fileInput.capture = 'environment'; // rear camera
-            fileInput.click();
-        });
-
-        document.getElementById('uploadFileBtn').addEventListener('click', () => {
-            fileInput.accept = '.pdf,.docx,.txt';
-            fileInput.capture = undefined;
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            await processFile(file);
-            fileInput.value = '';
-        });
-
-        async function processFile(file) {
-            // Show immediate preview with processing status
-            showFilePreview(file, '⏳ Processing...');
-
-            let extractedText = '';
-            const fileType = file.type;
-            const fileName = file.name.toLowerCase();
-
-            try {
-                if (fileType.startsWith('image/')) {
-                    extractedText = await extractTextFromImage(file);
-                } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-                    extractedText = await extractTextFromPDF(file);
-                } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || fileName.endsWith('.docx')) {
-                    extractedText = await extractTextFromDocx(file);
-                } else if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
-                    extractedText = await extractTextFromTxt(file);
-                } else {
-                    extractedText = '[Unsupported file type. Please upload image, PDF, Word, or text.]';
-                }
-
-                currentFile = {
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    extractedText: extractedText.trim() || '[No text could be extracted]',
-                    previewUrl: fileType.startsWith('image/') ? URL.createObjectURL(file) : null
-                };
-
-                const status = `📄 Extracted ${currentFile.extractedText.length} characters`;
-                showFilePreview(file, status);
-            } catch (error) {
-                console.error('File processing error:', error);
-                currentFile.extractedText = '[Error processing file]';
-                showFilePreview(file, '❌ Processing failed');
-            }
-        }
-
-        async function extractTextFromImage(file) {
-            const { data: { text } } = await Tesseract.recognize(file, 'eng', {
-                logger: m => console.log(m)
+        async function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
-            return text;
         }
 
-        async function extractTextFromPDF(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                const strings = content.items.map(item => item.str);
-                fullText += strings.join(' ') + '\n';
+        async function extractTextFromFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        // ===== API CALL =====
+        async function getBotResponse(userMessage, files = []) {
+            const messageContent = [];
+
+            // Add text content
+            if (userMessage.trim()) {
+                messageContent.push({
+                    type: 'text',
+                    text: userMessage
+                });
             }
-            return fullText;
-        }
 
-        async function extractTextFromDocx(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const result = await mammoth.extractRawText({ arrayBuffer });
-            return result.value;
-        }
-
-        async function extractTextFromTxt(file) {
-            return await file.text();
-        }
-
-        function showFilePreview(file, statusText) {
-            filePreviewContainer.style.display = 'flex';
-            const fileSize = (file.size / 1024).toFixed(1) + ' KB';
-            
-            let thumbnailHtml = '';
-            if (file.type.startsWith('image/') && currentFile.previewUrl) {
-                thumbnailHtml = `<img src="${currentFile.previewUrl}" alt="thumbnail">`;
-            } else {
-                // Icons for different file types
-                if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-                    thumbnailHtml = '<span class="file-icon">📄</span>';
-                } else if (file.type.includes('word') || file.name.endsWith('.docx')) {
-                    thumbnailHtml = '<span class="file-icon">📝</span>';
-                } else if (file.type.startsWith('image/')) {
-                    thumbnailHtml = '<span class="file-icon">🖼️</span>';
+            // Process files
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    // Handle images
+                    const base64 = await fileToBase64(file);
+                    messageContent.push({
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${file.type};base64,${base64}`
+                        }
+                    });
                 } else {
-                    thumbnailHtml = '<span class="file-icon">📁</span>';
+                    // Handle text-based files
+                    try {
+                        const text = await extractTextFromFile(file);
+                        messageContent.push({
+                            type: 'text',
+                            text: `Content of ${file.name}:\n\n${text}`
+                        });
+                    } catch (error) {
+                        messageContent.push({
+                            type: 'text',
+                            text: `[Unable to read file: ${file.name}]`
+                        });
+                    }
                 }
             }
 
-            filePreview.innerHTML = `
-                ${thumbnailHtml}
-                <div class="file-info">
-                    <div class="file-name">${file.name}</div>
-                    <div class="file-status">${fileSize} • ${statusText}</div>
-                </div>
-            `;
-        }
-
-        // Remove file
-        function removeCurrentFile() {
-            if (currentFile.previewUrl) {
-                URL.revokeObjectURL(currentFile.previewUrl);
-            }
-            currentFile = { name: null, size: null, type: null, extractedText: null, previewUrl: null };
-            filePreviewContainer.style.display = 'none';
-            filePreview.innerHTML = '';
-        }
-
-        removeFileBtn.addEventListener('click', removeCurrentFile);
-
-        // ===== API CALL VIA SECURE WORKER =====
-        async function getBotResponse(userMessage) {
-            // Build full message with file content if attached
-            let fullMessage = userMessage;
-            if (currentFile.extractedText) {
-                fullMessage = `[Attached file: ${currentFile.name}]\nExtracted content:\n${currentFile.extractedText}\n\nUser's question: ${userMessage}`;
-            }
-
-            conversationHistory.push({ role: 'user', content: fullMessage });
+            conversationHistory.push({
+                role: 'user',
+                content: messageContent.length === 1 ? messageContent[0].text : messageContent
+            });
 
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                        // No API key here – it's in your Cloudflare Worker!
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': YOUR_SITE_URL,
+                        'X-Title': YOUR_SITE_NAME
                     },
                     body: JSON.stringify({
                         model: MODEL,
                         messages: conversationHistory,
                         temperature: 0.7,
-                        max_tokens: 1000
+                        max_tokens: 2000
                     })
                 });
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.error?.message || `API error ${response.status}`);
+                    throw new Error(error.error?.message || `API request failed with status ${response.status}`);
                 }
 
                 const data = await response.json();
                 const botReply = data.choices[0].message.content;
+
                 conversationHistory.push({ role: 'assistant', content: botReply });
+                
                 return botReply;
             } catch (error) {
-                console.error('API call failed:', error);
-                return `⚠️ Error: ${error.message}. Please check your Cloudflare Worker URL.`;
+                console.error('Error:', error);
+                return `⚠️ Error: ${error.message}. Please check your network or try again.`;
             }
         }
 
         // ===== SEND MESSAGE =====
         async function handleSendMessage() {
-            let userMessage = userInput.value.trim();
-            if (!userMessage && !currentFile.extractedText) {
-                return; // Nothing to send
-            }
-            if (!userMessage && currentFile.extractedText) {
-                userMessage = 'What does this file contain?';
-            }
+            const userMessage = userInput.value.trim();
+            const files = [...attachedFiles];
+
+            if (!userMessage && files.length === 0) return;
 
             userInput.disabled = true;
             sendBtn.disabled = true;
+            attachmentBtn.disabled = true;
 
-            // Display user message with file indicator
-            let displayMessage = userMessage;
-            if (currentFile.extractedText) {
-                displayMessage = `📎 ${currentFile.name}\n\n${userMessage}`;
-            }
-            addMessageToUI('user', displayMessage);
-
+            await addMessageToUI('user', userMessage || '📎 Attached files', files);
+            
             userInput.value = '';
             userInput.style.height = 'auto';
 
+            // Clear attachments
+            attachedFiles = [];
+            filePreviewContainer.innerHTML = '';
+            updateFilePreviewContainer();
+
+            // Reset file inputs
+            photoInput.value = '';
+            cameraInput.value = '';
+            fileInput.value = '';
+
             showTypingIndicator();
 
-            const botResponse = await getBotResponse(userMessage);
+            const botResponse = await getBotResponse(userMessage, files);
 
             removeTypingIndicator();
-            addMessageToUI('bot', botResponse);
+            await addMessageToUI('bot', botResponse);
 
             userInput.disabled = false;
             sendBtn.disabled = false;
+            attachmentBtn.disabled = false;
             userInput.focus();
-
-            // Optional: Uncomment to auto-remove file after sending
-            // removeCurrentFile();
         }
 
         // ===== AUTO-RESIZE TEXTAREA =====
@@ -1030,6 +1156,7 @@
 
         // ===== EVENT LISTENERS =====
         sendBtn.addEventListener('click', handleSendMessage);
+        
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
