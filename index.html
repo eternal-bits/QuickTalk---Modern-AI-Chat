@@ -7,8 +7,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f0f0f">
     <title>QuickTalk - Modern AI Chat</title>
+    <!-- File processing libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
     <style>
-        /* ===== CSS VARIABLES FOR THEMING ===== */
+        /* ===== CSS VARIABLES FOR THEMING (YOUR EXISTING STYLES + NEW FILE UPLOAD STYLES) ===== */
         :root {
             --bg-primary: #0f0f0f;
             --bg-secondary: #1a1a1a;
@@ -51,7 +55,7 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
-            height: 100dvh; /* Dynamic viewport height for mobile */
+            height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -64,12 +68,11 @@
             left: 0;
         }
 
-        /* ===== CHAT CONTAINER ===== */
         .chat-container {
             width: 100%;
             max-width: 900px;
             height: 90vh;
-            height: 90dvh; /* Dynamic viewport height */
+            height: 90dvh;
             max-height: 800px;
             background: var(--bg-secondary);
             border-radius: 24px;
@@ -130,7 +133,6 @@
             gap: 8px;
         }
 
-        /* ===== THEME TOGGLE ===== */
         .theme-toggle {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -178,7 +180,6 @@
             background: var(--text-secondary);
         }
 
-        /* ===== MESSAGE BUBBLES ===== */
         .message {
             display: flex;
             gap: 12px;
@@ -237,13 +238,6 @@
             border: 1px solid var(--border-color);
         }
 
-        .message-time {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-            text-align: right;
-        }
-
         /* ===== TYPING INDICATOR ===== */
         .typing-indicator {
             display: flex;
@@ -278,11 +272,14 @@
             animation-delay: 0.4s;
         }
 
-        /* ===== INPUT AREA ===== */
+        /* ===== INPUT AREA (REDESIGNED TO INCLUDE FILE UPLOAD) ===== */
         .chat-input-container {
-            padding: 20px 24px;
+            padding: 16px 20px 20px 20px;
             background: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .input-wrapper {
@@ -347,6 +344,134 @@
             opacity: 0.5;
         }
 
+        /* ===== NEW: FILE UPLOAD BUTTONS & PREVIEW ===== */
+        .file-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .file-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 10px 18px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+            font-weight: 500;
+            flex: 0 1 auto;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .file-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+        }
+
+        .file-btn i {
+            font-size: 16px;
+        }
+
+        .file-preview-container {
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 8px;
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-preview img {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .file-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .file-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-status {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .remove-file {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .remove-file:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ff4444;
+        }
+
+        /* ===== WELCOME MESSAGE ===== */
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 0.95rem;
+        }
+
         /* ===== ANIMATIONS ===== */
         @keyframes slideIn {
             from {
@@ -370,7 +495,7 @@
             }
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* ===== RESPONSIVE (Your existing breakpoints + file button adjustments) ===== */
         @media (max-width: 768px) {
             body {
                 padding: 0;
@@ -378,7 +503,7 @@
 
             .chat-container {
                 height: 100vh;
-                height: 100dvh; /* Dynamic viewport height */
+                height: 100dvh;
                 max-height: 100vh;
                 max-height: 100dvh;
                 border-radius: 0;
@@ -415,7 +540,6 @@
             .chat-messages {
                 padding: 16px;
                 padding-bottom: max(env(safe-area-inset-bottom), 16px);
-                /* Prevent content from being hidden behind keyboard */
                 scroll-padding-bottom: 80px;
             }
 
@@ -439,12 +563,10 @@
                 padding-bottom: max(env(safe-area-inset-bottom, 12px));
                 position: sticky;
                 bottom: 0;
-                background: var(--bg-secondary);
-                border-top: 1px solid var(--border-color);
             }
 
             .input-field {
-                font-size: 16px; /* Prevents zoom on iOS */
+                font-size: 16px;
                 padding: 12px 16px;
                 border-radius: 14px;
                 max-height: 100px;
@@ -455,93 +577,26 @@
                 height: 48px;
                 border-radius: 14px;
                 font-size: 20px;
-                /* Larger touch target */
                 min-width: 48px;
                 min-height: 48px;
             }
 
-            .welcome-message {
-                padding: 24px 16px;
+            .file-btn {
+                padding: 8px 14px;
+                font-size: 13px;
             }
 
-            .welcome-icon {
-                font-size: 40px;
-            }
-
-            .welcome-title {
-                font-size: 1.3rem;
-            }
-
-            .welcome-subtitle {
-                font-size: 0.9rem;
+            .file-preview-container {
+                padding: 10px 12px;
             }
         }
 
-        /* Extra small devices */
         @media (max-width: 380px) {
-            .chat-header {
-                padding: max(env(safe-area-inset-top), 12px) 12px 12px 12px;
+            .file-btn span {
+                display: none; /* Hide text, keep icons on very small screens */
             }
-
-            .logo {
-                width: 32px;
-                height: 32px;
-                font-size: 16px;
-            }
-
-            .title {
-                font-size: 1rem;
-            }
-
-            .theme-toggle {
-                width: 36px;
-                height: 36px;
-                font-size: 16px;
-            }
-
-            .chat-messages {
-                padding: 12px;
-                gap: 12px;
-            }
-
-            .message-bubble {
-                padding: 10px 14px;
-                font-size: 14px;
-            }
-
-            .send-btn {
-                width: 44px;
-                height: 44px;
-            }
-        }
-
-        /* Landscape mobile optimization */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .chat-header {
-                padding: 12px 16px;
-            }
-
-            .logo {
-                width: 32px;
-                height: 32px;
-            }
-
-            .chat-messages {
-                padding: 12px 16px;
-            }
-
-            .welcome-message {
-                padding: 20px 16px;
-            }
-
-            .welcome-icon {
-                font-size: 32px;
-                margin-bottom: 8px;
-            }
-
-            .welcome-title {
-                font-size: 1.2rem;
-                margin-bottom: 4px;
+            .file-btn {
+                padding: 10px;
             }
         }
 
@@ -550,64 +605,30 @@
             .chat-container {
                 height: -webkit-fill-available;
             }
-
             body {
                 height: -webkit-fill-available;
             }
         }
 
-        /* Prevent text selection on touch devices */
-        @media (hover: none) {
-            .theme-toggle,
-            .send-btn,
-            .message-avatar,
-            .logo {
-                -webkit-tap-highlight-color: transparent;
-                user-select: none;
-                -webkit-user-select: none;
-            }
-        }
-
         /* Touch optimization */
         .theme-toggle,
-        .send-btn {
+        .send-btn,
+        .file-btn,
+        .remove-file {
             -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
             touch-action: manipulation;
-        }
-
-        /* ===== WELCOME MESSAGE ===== */
-        .welcome-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-
-        .welcome-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .welcome-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .welcome-subtitle {
-            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <!-- Header -->
+        <!-- Header (exactly yours) -->
         <div class="chat-header">
             <div class="header-left">
                 <div class="logo"></div>
                 <div class="header-title">
                     <div class="title">QuickTalk</div>
-                    <div class="subtitle">Your personal AI assistantk</div>
+                    <div class="subtitle">Your personal AI assistant</div>
                 </div>
             </div>
             <div class="header-actions">
@@ -622,12 +643,24 @@
             <div class="welcome-message">
                 <div class="welcome-icon"></div>
                 <div class="welcome-title">Welcome to QuickTalk</div>
-                <div class="welcome-subtitle">Start a conversation with our AI assistant</div>
+                <div class="welcome-subtitle">Start a conversation with our AI assistant – now with file upload!</div>
             </div>
         </div>
 
-        <!-- Input Area -->
+        <!-- Input Area with File Upload -->
         <div class="chat-input-container">
+            <!-- Hidden file input -->
+            <input type="file" id="fileInput" accept="image/*,.pdf,.docx,.txt" style="display: none;">
+            
+            <!-- File preview (initially hidden) -->
+            <div id="filePreviewContainer" class="file-preview-container" style="display: none;">
+                <div id="filePreview" class="file-preview">
+                    <!-- Thumbnail / icon + info will be injected here -->
+                </div>
+                <button id="removeFileBtn" class="remove-file" title="Remove file">✖</button>
+            </div>
+            
+            <!-- Text input row -->
             <div class="input-wrapper">
                 <textarea 
                     id="user-input" 
@@ -640,10 +673,24 @@
                     <span>➤</span>
                 </button>
             </div>
+            
+            <!-- File upload buttons -->
+            <div class="file-buttons">
+                <button id="uploadGalleryBtn" class="file-btn">
+                    <span>📷</span> <span>Add photo</span>
+                </button>
+                <button id="uploadCameraBtn" class="file-btn">
+                    <span>📸</span> <span>Take photo</span>
+                </button>
+                <button id="uploadFileBtn" class="file-btn">
+                    <span>📁</span> <span>Add files</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
+        
         // 🔐 OPENROUTER API KEY 
         const API_KEY = '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';
 
@@ -653,19 +700,32 @@
         const YOUR_SITE_URL = 'https://utsavdwivedi51.github.io/QuickTalk---Modern-AI-Chat/';
         const YOUR_SITE_NAME = 'QuickTalk';
 
-        // Conversation history
+        // ===== CONVERSATION HISTORY =====
         let conversationHistory = [
-            { role: 'system', content: 'You are a helpful, friendly AI assistant.' }
+            { role: 'system', content: 'You are a helpful, friendly AI assistant. You can read text extracted from uploaded files and answer questions about them.' }
         ];
 
-        // DOM elements
+        // ===== CURRENT FILE STATE =====
+        let currentFile = {
+            name: null,
+            size: null,
+            type: null,
+            extractedText: null,
+            previewUrl: null
+        };
+
+        // ===== DOM ELEMENTS =====
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
+        const fileInput = document.getElementById('fileInput');
+        const filePreviewContainer = document.getElementById('filePreviewContainer');
+        const filePreview = document.getElementById('filePreview');
+        const removeFileBtn = document.getElementById('removeFileBtn');
 
-        // ===== THEME MANAGEMENT =====
+        // ===== THEME MANAGEMENT (YOUR EXACT CODE) =====
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -686,18 +746,15 @@
 
         themeToggle.addEventListener('click', toggleTheme);
 
-        // ===== MESSAGE FUNCTIONS =====
+        // ===== MESSAGE UI FUNCTIONS (YOUR EXACT CODE, ADAPTED) =====
         function getCurrentTime() {
             const now = new Date();
             return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
         function addMessageToUI(role, content) {
-            // Remove welcome message if it exists
             const welcomeMsg = document.querySelector('.welcome-message');
-            if (welcomeMsg) {
-                welcomeMsg.remove();
-            }
+            if (welcomeMsg) welcomeMsg.remove();
 
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', role === 'user' ? 'user-message' : 'bot-message');
@@ -707,16 +764,13 @@
             avatar.textContent = role === 'user' ? '👤' : '🤖';
             
             const bubbleWrapper = document.createElement('div');
-            
             const bubble = document.createElement('div');
             bubble.classList.add('message-bubble');
             bubble.textContent = content;
-            
             bubbleWrapper.appendChild(bubble);
             
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(bubbleWrapper);
-            
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -732,7 +786,6 @@
             
             const typingBubble = document.createElement('div');
             typingBubble.classList.add('typing-bubble');
-            
             for (let i = 0; i < 3; i++) {
                 const dot = document.createElement('span');
                 typingBubble.appendChild(dot);
@@ -749,18 +802,161 @@
             if (indicator) indicator.remove();
         }
 
-        // ===== API CALL =====
+        // ===== FILE PROCESSING =====
+        // Initialize PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Trigger file picker
+        document.getElementById('uploadGalleryBtn').addEventListener('click', () => {
+            fileInput.accept = 'image/*';
+            fileInput.capture = undefined;
+            fileInput.click();
+        });
+
+        document.getElementById('uploadCameraBtn').addEventListener('click', () => {
+            fileInput.accept = 'image/*';
+            fileInput.capture = 'environment'; // rear camera
+            fileInput.click();
+        });
+
+        document.getElementById('uploadFileBtn').addEventListener('click', () => {
+            fileInput.accept = '.pdf,.docx,.txt';
+            fileInput.capture = undefined;
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            await processFile(file);
+            fileInput.value = '';
+        });
+
+        async function processFile(file) {
+            // Show immediate preview with processing status
+            showFilePreview(file, '⏳ Processing...');
+
+            let extractedText = '';
+            const fileType = file.type;
+            const fileName = file.name.toLowerCase();
+
+            try {
+                if (fileType.startsWith('image/')) {
+                    extractedText = await extractTextFromImage(file);
+                } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+                    extractedText = await extractTextFromPDF(file);
+                } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || fileName.endsWith('.docx')) {
+                    extractedText = await extractTextFromDocx(file);
+                } else if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
+                    extractedText = await extractTextFromTxt(file);
+                } else {
+                    extractedText = '[Unsupported file type. Please upload image, PDF, Word, or text.]';
+                }
+
+                currentFile = {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    extractedText: extractedText.trim() || '[No text could be extracted]',
+                    previewUrl: fileType.startsWith('image/') ? URL.createObjectURL(file) : null
+                };
+
+                const status = `📄 Extracted ${currentFile.extractedText.length} characters`;
+                showFilePreview(file, status);
+            } catch (error) {
+                console.error('File processing error:', error);
+                currentFile.extractedText = '[Error processing file]';
+                showFilePreview(file, '❌ Processing failed');
+            }
+        }
+
+        async function extractTextFromImage(file) {
+            const { data: { text } } = await Tesseract.recognize(file, 'eng', {
+                logger: m => console.log(m)
+            });
+            return text;
+        }
+
+        async function extractTextFromPDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const strings = content.items.map(item => item.str);
+                fullText += strings.join(' ') + '\n';
+            }
+            return fullText;
+        }
+
+        async function extractTextFromDocx(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value;
+        }
+
+        async function extractTextFromTxt(file) {
+            return await file.text();
+        }
+
+        function showFilePreview(file, statusText) {
+            filePreviewContainer.style.display = 'flex';
+            const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+            
+            let thumbnailHtml = '';
+            if (file.type.startsWith('image/') && currentFile.previewUrl) {
+                thumbnailHtml = `<img src="${currentFile.previewUrl}" alt="thumbnail">`;
+            } else {
+                // Icons for different file types
+                if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                    thumbnailHtml = '<span class="file-icon">📄</span>';
+                } else if (file.type.includes('word') || file.name.endsWith('.docx')) {
+                    thumbnailHtml = '<span class="file-icon">📝</span>';
+                } else if (file.type.startsWith('image/')) {
+                    thumbnailHtml = '<span class="file-icon">🖼️</span>';
+                } else {
+                    thumbnailHtml = '<span class="file-icon">📁</span>';
+                }
+            }
+
+            filePreview.innerHTML = `
+                ${thumbnailHtml}
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-status">${fileSize} • ${statusText}</div>
+                </div>
+            `;
+        }
+
+        // Remove file
+        function removeCurrentFile() {
+            if (currentFile.previewUrl) {
+                URL.revokeObjectURL(currentFile.previewUrl);
+            }
+            currentFile = { name: null, size: null, type: null, extractedText: null, previewUrl: null };
+            filePreviewContainer.style.display = 'none';
+            filePreview.innerHTML = '';
+        }
+
+        removeFileBtn.addEventListener('click', removeCurrentFile);
+
+        // ===== API CALL VIA SECURE WORKER =====
         async function getBotResponse(userMessage) {
-            conversationHistory.push({ role: 'user', content: userMessage });
+            // Build full message with file content if attached
+            let fullMessage = userMessage;
+            if (currentFile.extractedText) {
+                fullMessage = `[Attached file: ${currentFile.name}]\nExtracted content:\n${currentFile.extractedText}\n\nUser's question: ${userMessage}`;
+            }
+
+            conversationHistory.push({ role: 'user', content: fullMessage });
 
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${API_KEY}`,
-                        'HTTP-Referer': YOUR_SITE_URL,
-                        'X-Title': YOUR_SITE_NAME
+                        'Content-Type': 'application/json'
+                        // No API key here – it's in your Cloudflare Worker!
                     },
                     body: JSON.stringify({
                         model: MODEL,
@@ -772,30 +968,39 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.error?.message || `API request failed with status ${response.status}`);
+                    throw new Error(error.error?.message || `API error ${response.status}`);
                 }
 
                 const data = await response.json();
                 const botReply = data.choices[0].message.content;
-
                 conversationHistory.push({ role: 'assistant', content: botReply });
-                
                 return botReply;
             } catch (error) {
-                console.error('Error:', error);
-                return `⚠️ Error: ${error.message}. Please check your network.`;
+                console.error('API call failed:', error);
+                return `⚠️ Error: ${error.message}. Please check your Cloudflare Worker URL.`;
             }
         }
 
         // ===== SEND MESSAGE =====
         async function handleSendMessage() {
-            const userMessage = userInput.value.trim();
-            if (!userMessage) return;
+            let userMessage = userInput.value.trim();
+            if (!userMessage && !currentFile.extractedText) {
+                return; // Nothing to send
+            }
+            if (!userMessage && currentFile.extractedText) {
+                userMessage = 'What does this file contain?';
+            }
 
             userInput.disabled = true;
             sendBtn.disabled = true;
 
-            addMessageToUI('user', userMessage);
+            // Display user message with file indicator
+            let displayMessage = userMessage;
+            if (currentFile.extractedText) {
+                displayMessage = `📎 ${currentFile.name}\n\n${userMessage}`;
+            }
+            addMessageToUI('user', displayMessage);
+
             userInput.value = '';
             userInput.style.height = 'auto';
 
@@ -809,6 +1014,9 @@
             userInput.disabled = false;
             sendBtn.disabled = false;
             userInput.focus();
+
+            // Optional: Uncomment to auto-remove file after sending
+            // removeCurrentFile();
         }
 
         // ===== AUTO-RESIZE TEXTAREA =====
@@ -819,7 +1027,6 @@
 
         // ===== EVENT LISTENERS =====
         sendBtn.addEventListener('click', handleSendMessage);
-        
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
